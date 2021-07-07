@@ -58,3 +58,9 @@ def get_full_column_from_table(table, column) -> (list):
     """Get the whole column from the given table"""
     mtable = getattr(models, table)
     return [entry[0] for entry in mtable.query.with_entities(getattr(mtable, column)).all()]
+
+
+def get_user_emails(uid, only_id=False) -> (list):
+    """Gets all the email addresses for the user ID"""
+    email_list = models.Email.query.filter_by(user_id=uid).all()
+    return email_list if not only_id else [email.id for email in email_list]

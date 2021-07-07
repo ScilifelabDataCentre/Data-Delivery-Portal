@@ -1,7 +1,7 @@
 "User display and login/logout HTMl endpoints."
 
 import flask
-from flask import render_template, request, current_app, session, redirect, url_for
+from flask import render_template, request, current_app, session, redirect, url_for, jsonify
 import sqlalchemy
 
 from dds_web import timestamp, oauth
@@ -166,3 +166,83 @@ def user_page(loginname=None):
 #         return render_template('user/signup.html', title='Signup')
 #     if request.method == "POST":
 #         pass
+
+
+@user_blueprint.route("/account")
+@login_required
+def account_info():
+    """User account page"""
+
+    return render_template("user/account.html")
+
+
+# TO DO: MAYBE MOVE THIS TO THE API (OR KEEP IT HERE IF API IS ONLY FOR CLI)
+@user_blueprint.route("/account_methods", methods=["POST", "DELETE", "GET", "PUT"])
+@login_required
+def account_methods():
+    """account page"""
+
+    username = session["current_user"]
+    uid = session["current_user_id"]
+
+    if request.method == "GET":
+        # Fetch all user information
+        account_info = {}
+
+        account_info["username"] = username
+
+        emails = db_utils.get_user_emails(uid)
+        account_info["emails"] = [
+            {
+                "address": getattr(user_row, "email", None),
+                "primary": getattr(user_row, "primary", False),
+            }
+            for user_row in emails
+            if getattr(user_row, "email", None) != None
+        ]
+
+        # TO DO: the database does not contain any email addresses yet. When it does this line with dummy data should be removed.
+        account_info["emails"] = [
+            {"address": "one@mail.com", "primary": False},
+            {"address": "two@mail.com", "primary": False},
+        ]
+
+        # TO DO: Make this update in db also, i.e not only for printing as it is now
+        if len(account_info["emails"]) != 0:
+            if not (True in [email.get("primary") for email in account_info["emails"]]):
+                update_to_primary = account_info["emails"][0]
+                update_to_primary["primary"] = True
+        account_info["emails"] = sorted(
+            account_info["emails"], key=lambda k: k["primary"], reverse=True
+        )
+
+        permissions_list = list(db_utils.get_user_column_by_username(username, "permissions"))
+        permissions_dict = {"g": "get", "l": "list", "p": "put", "r": "remove"}
+        account_info["permissions"] = ", ".join(
+            [
+                permissions_dict[permission]
+                for permission in permissions_list
+                if permission in permissions_dict
+            ]
+        )
+
+        account_info["first_name"] = db_utils.get_user_column_by_username(username, "first_name")
+        account_info["last_name"] = db_utils.get_user_column_by_username(username, "last_name")
+
+        return account_info
+    if request.method == "PUT":
+        # update name and change primary
+        # for k in ["firstName", "lastName"]:
+        #     if not request.form.get(k):
+        #         return make_response(
+        #             jsonify({"status": 440, "message": f"Field '{k}' should not be empty"}), 440
+        #         )
+        return ""
+    if request.method == "DELETE":
+        # delete email
+        #   should not be able to delete primary
+        return ""
+    if request.method == "POST":
+        # TO DO: POST request for adding a new email
+        # Might need to include a token for verifying email
+        return ""
