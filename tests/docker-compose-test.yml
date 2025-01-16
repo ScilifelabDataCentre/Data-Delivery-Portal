@@ -16,7 +16,7 @@ services:
       context: ./
       target: test
     command: >
-      sh -c "COVERAGE_FILE=./coverage/.coverage pytest -s -color=yes $DDS_PYTEST_ARGS --cov=./dds_web --cov-report=xml:coverage/report.xml"
+      sh -c "COVERAGE_FILE=./coverage/.coverage pytest --cov-branch -s -color=yes $DDS_PYTEST_ARGS --cov=./dds_web --cov-report=xml:coverage/report.xml"
     restart: "no"
     volumes:
       - type: bind
