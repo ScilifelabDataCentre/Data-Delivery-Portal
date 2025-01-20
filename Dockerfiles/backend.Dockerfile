@@ -74,10 +74,10 @@ RUN npm run css
 #########################
 FROM base as production
 
-RUN pip install gunicorn
+RUN pip install gunicorn eventlet
 
 # Add parameters for gunicorn
-ENV GUNICORN_CMD_ARGS "--bind=0.0.0.0:5000 --workers=2 --thread=4 --worker-class=gthread --forwarded-allow-ips='*' --access-logfile -"
+ENV GUNICORN_CMD_ARGS "--bind=0.0.0.0:5000 --workers=10 --worker-class=eventlet --timeout 120 --forwarded-allow-ips='*' --access-logfile - --error-logfile -"
 
 # Set working directory - 'code' dir in container, 'code' dir locally (in code)
 WORKDIR /code/dds_web
