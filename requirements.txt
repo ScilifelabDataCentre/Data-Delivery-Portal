@@ -8,10 +8,11 @@ blinker==1.4
 boto3==1.20.47
 botocore==1.23.47
 cachetools==5.2.0
+celery[redis]==5.4.0
 certifi==2024.7.4
 cffi==1.15.0
 charset-normalizer==2.0.11
-click==8.0.3
+click==8.1.2 # Celery requires >=8.1.2
 cryptography==42.0.4
 Deprecated==1.2.13
 dnspython==2.2.0
@@ -52,7 +53,7 @@ python-dateutil==2.8.2
 pytz==2021.3
 pytz-deprecation-shim==0.1.0.post0
 qrcode==7.3.1
-redis==4.5.5
+redis==4.6.0 # Celery requires != 4.5.5, <6.0.0, >=4.5.2
 requests==2.32.0
 requests_cache==0.9.4
 rich==12.5.1
@@ -61,7 +62,7 @@ simplejson==3.17.6
 six==1.16.0
 SQLAlchemy==1.4.31
 structlog==21.5.0
-tzdata==2021.5
+tzdata==2022.7 # Celery requires >=2022.7
 tzlocal==4.1
 urllib3==1.26.18
 visitor==0.1.3

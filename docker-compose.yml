@@ -174,3 +174,14 @@ services:
       - type: bind
         source: ../dds_cli
         target: /code
+
+  celery:
+    build:
+        context: .
+    environment:
+      FLASK_APP: run
+    volumes:
+      - .:/app
+    command: celery -A run.celery worker --loglevel=info
+    depends_on:
+      - redis
