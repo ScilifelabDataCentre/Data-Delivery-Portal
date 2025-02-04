@@ -501,6 +501,20 @@ def send_email_with_retry(msg, times_retried=0, obj=None):
             send_email_with_retry(msg, times_retried=retry, obj=obj)
 
 
+def send_email_for_queue(msg):
+    """TODO fix and maybe replace the main send_email function
+    The other function cannot be used in a redis job because the
+    connection object is not picklable.
+    """
+    try:
+        mail.send(msg)
+    except smtplib.SMTPException as err:
+        # Wait a little bit
+        time.sleep(10)
+        # Retry twice, calls the other function TODO fix or replace
+        send_email_with_retry(msg, times_retried=1, obj=mail)
+
+
 def create_one_time_password_email(user, hotp_value):
     """Create HOTP email."""
     msg = flask_mail.Message(

@@ -14,6 +14,8 @@ from flask_restful import inputs
 import flask
 import structlog
 import flask_mail
+from rq import Queue
+from redis import Redis
 
 # Own modules
 from dds_web import auth, db, mail
@@ -149,6 +151,12 @@ class SendMOTD(flask_restful.Resource):
     @handle_db_error
     def post(self):
         """Send MOTD as email to users."""
+
+        # Get redis connection and queue
+        redis_url = flask.current_app.config.get("REDIS_URL")
+        r = Redis.from_url(redis_url)
+        q = Queue(connection=r)
+
         # Get request info
         request_json = flask.request.get_json(silent=True)  # Verified by json_required
         # Get MOTD ID
@@ -203,15 +211,20 @@ class SendMOTD(flask_restful.Resource):
                         ["Content-ID", "<Logo>"],
                     ],
                 )
-                # Send email
+                # Send email in a queue to avoid blocking the API
+                # job = q.enqueue(utils.send_email_with_queue, msg)
+
+                # This funcion cannot be enqued because the connection object is not pickable
                 utils.send_email_with_retry(msg=msg, obj=conn)
 
         return_msg = f"MOTD '{motd_id}' has been "
         if unit_only:
-            return_msg += "sent to unit personnel only."
+            return_msg += "scheduled to unit personnel only."
         else:
-            return_msg += "sent to all users."
-
+            return_msg += "scheduled to all users."
+        return_msg += (
+            " You can check the status of the emails in the dashboard (TODO ADD DASHBOARD URL)."
+        )
         return {"message": return_msg}
 
 

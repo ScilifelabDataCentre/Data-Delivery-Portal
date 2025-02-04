@@ -56,6 +56,8 @@ redis==4.5.5
 requests==2.32.0
 requests_cache==0.9.4
 rich==12.5.1
+rq==2.1.0
+rq-dashboard==0.8.2.2
 s3transfer==0.5.1
 simplejson==3.17.6
 six==1.16.0

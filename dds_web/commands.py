@@ -18,6 +18,8 @@ import flask
 import flask_mail
 import sqlalchemy
 import botocore
+import redis
+from rq import Worker
 
 # Own
 from dds_web import db
@@ -1319,3 +1321,17 @@ def monitor_usage():
                 body=message,
             )
             dds_web.utils.send_email_with_retry(msg=msg)
+
+
+@click.command("run-worker")
+@flask.cli.with_appcontext
+def run_worker():
+    """TODO"""
+    # workers configuration is found in https://python-rq.org/docs/workers/
+    # Check if for further customizations
+    redis_url = flask.current_app.config.get("REDIS_URL")
+    redis_connection = redis.from_url(redis_url)
+    worker = Worker(
+        ["default"], connection=redis_connection, name="redis-queue"
+    )  # if no name, it wil be random
+    worker.work()

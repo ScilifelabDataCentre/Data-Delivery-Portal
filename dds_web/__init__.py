@@ -20,7 +20,7 @@ from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 import flask_mail
 import flask_login
 import flask_migrate
-
+import rq_dashboard
 
 # import flask_qrcode
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -198,6 +198,10 @@ def create_app(testing=False, database_uri=None):
         # User config file, if e.g. using in production
         app.config.from_envvar("DDS_APP_CONFIG", silent=True)
 
+        # redis dashboard
+        app.config.from_object(rq_dashboard.default_settings)
+        rq_dashboard.web.setup_rq_connection(app)
+
         # Test related configs
         if database_uri is not None:
             app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
@@ -305,6 +309,7 @@ def create_app(testing=False, database_uri=None):
             monitor_usage,
             update_unit_sto4,
             update_unit_quota,
+            run_worker,
         )
 
         # Add flask commands - general
@@ -323,6 +328,7 @@ def create_app(testing=False, database_uri=None):
         app.cli.add_command(send_usage)
         app.cli.add_command(collect_stats)
         app.cli.add_command(monitor_usage)
+        app.cli.add_command(run_worker)
 
         # Make version available inside jinja templates:
         @app.template_filter("dds_version")
@@ -374,6 +380,8 @@ def create_app(testing=False, database_uri=None):
             app.register_blueprint(swagger_ui_blueprint_v3, url_prefix=SWAGGER_URL_3, name="v3")
             app.register_blueprint(api_blueprint, url_prefix="/api/v1")
             app.register_blueprint(api_blueprint_v3, url_prefix="/api/v3")
+
+            app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
             app.register_blueprint(pages, url_prefix="")
             app.register_blueprint(auth_blueprint, url_prefix="")
 

@@ -65,7 +65,7 @@ services:
       - FLASK_INSTANCE_NAME=LOCAL_DEVELOPMENT
 
       - DB_TYPE=${DDS_DB_TYPE}
-      # - RATELIMIT_STORAGE_URI=redis://dds_redis
+      - RATELIMIT_STORAGE_URI=redis://dds_redis
     depends_on:
       db:
         condition: service_healthy
